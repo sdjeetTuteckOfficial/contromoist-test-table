@@ -23,6 +23,9 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
+      hasError: false,
     },
     {
       id: '14240284-9441-4daf-bf43-97d3a66af662',
@@ -44,6 +47,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '234ad2f9-efcb-4ad2-b2b2-70947e1b663d',
@@ -65,6 +70,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '450bdf3c-d409-4c6f-80a7-efb89f6c9b32',
@@ -86,6 +93,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '2cdde454-d5bc-4a21-9e53-9940c9b9c1ff',
@@ -107,6 +116,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '1da50333-d8e3-4fa3-9a8b-35e9b999db4d',
@@ -128,6 +139,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '3275c317-91a6-43b9-b268-5f2f63b3316b',
@@ -149,6 +162,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: 'c821f9ff-97a4-4917-a0cb-4d9fd50c7e8d',
@@ -170,6 +185,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '0a4a674e-6806-483b-9f7f-e92ed16ab3c4',
@@ -191,6 +208,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
     {
       id: '8e7d95c3-0a98-4d8a-9bcf-50f4dfbebd0f',
@@ -212,6 +231,8 @@ const ParentComponent = () => {
       uom_code: 'UOM-00009',
       parent_name: null,
       parent_code: null,
+      received_quantity: 0,
+      rejected_quantity: 0,
     },
   ];
 
@@ -256,34 +277,73 @@ const ParentComponent = () => {
       Header: 'Received Quantity',
       accessor: 'received_quantity',
       editable: true, // This column is editable
+      type: 'number',
     },
     {
       Header: 'Rejected Quantity',
       accessor: 'rejected_quantity',
       editable: true, // This column is editable
+      type: 'number',
     },
     {
       Header: 'Comment',
       accessor: 'notes',
       editable: true, // This column is editable
+      type: 'text',
     },
   ];
 
   const [tableData, setTableData] = useState(initialData);
 
-  const handleDataChange = (updatedData) => {
-    // Receive the updated data from the child
-    setTableData(updatedData);
-    console.log('Updated Data:', updatedData); // Log the updated data or process it further
+  const validateData = (data) => {
+    return data.map((item) => {
+      const errors = [];
+      const receivedQuantity = parseFloat(item.received_quantity) || 0;
+      const rejectedQuantity = parseFloat(item.rejected_quantity) || 0;
+      const qty = parseFloat(item.qty) || 0;
+      console.log('huihui', receivedQuantity, rejectedQuantity);
+
+      // Check if received and rejected quantities are greater than the quantity
+      if (receivedQuantity > qty) {
+        errors.push('Received Quantity cannot be greater than Quantity.');
+      }
+      if (rejectedQuantity > qty) {
+        errors.push('Rejected Quantity cannot be greater than Quantity.');
+      }
+
+      // Check if comment is mandatory when rejected quantity is greater than zero
+      if (rejectedQuantity > 0 && (!item.notes || item.notes.trim() === '')) {
+        errors.push('Comment is mandatory when rejecting items.');
+      }
+
+      // Return the item with error status
+      return {
+        ...item,
+        received_quantity: receivedQuantity,
+        rejected_quantity: rejectedQuantity,
+        hasError: errors.length > 0,
+        errorMessages: errors.length > 0 ? errors : [], // Clear error messages if no errors
+      };
+    });
+  };
+
+  const handleDataChange = (rowIndex, columnId, value) => {
+    // Validate the updated data
+    const updatedData = [...tableData];
+    updatedData[rowIndex][columnId] = value; // Update the specific column value
+    const validatedData = validateData(updatedData);
+    // Set the validated data in state
+    setTableData(validatedData);
+    console.log('Updated Data:', validatedData); // Log the updated data or process it further
   };
 
   return (
     <div>
       <h2>Editable Table</h2>
       <TableComponent
-        data={tableData}
+        tableData={tableData}
         columns={columns}
-        onDataChange={handleDataChange}
+        onEdit={handleDataChange}
       />
       <button onClick={() => console.log('Final Data: ', tableData)}>
         Log Final Data

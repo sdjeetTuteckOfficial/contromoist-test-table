@@ -2,19 +2,24 @@ import React, { useState } from 'react';
 import { useTable, usePagination } from 'react-table';
 import PropTypes from 'prop-types';
 
-const TableComponent = ({ data, columns, onDataChange }) => {
-  const [tableData, setTableData] = useState(data);
-
+const TableComponent = ({ tableData, columns, onEdit }) => {
+  //   const [tableData, setTableData] = useState(data);
   const handleEdit = (rowIndex, columnId, value) => {
-    const updatedData = [...tableData];
-    updatedData[rowIndex][columnId] = value; // Update the specific column value
-    setTableData(updatedData);
-
-    // Send updated data back to the parent
-    if (onDataChange) {
-      onDataChange(updatedData); // Pass the updated data to the parent
+    if (onEdit) {
+      onEdit(rowIndex, columnId, value); // Call the parent's edit handler
     }
   };
+
+  //   const handleEdit = (rowIndex, columnId, value) => {
+  //     const updatedData = [...tableData];
+  //     updatedData[rowIndex][columnId] = value; // Update the specific column value
+  //     setTableData(updatedData);
+
+  //     // Send updated data back to the parent
+  //     if (onDataChange) {
+  //       onDataChange(updatedData); // Pass the updated data to the parent
+  //     }
+  //   };
 
   const {
     getTableProps,
@@ -75,7 +80,14 @@ const TableComponent = ({ data, columns, onDataChange }) => {
           {page.map((row) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()}>
+              <tr
+                {...row.getRowProps()}
+                style={{
+                  backgroundColor: row.original.hasError ? 'red' : 'white',
+                  color: row.original.hasError ? 'red' : 'black',
+                }}
+              >
+                {console.log('this is itt', row.original.hasError)}
                 {row.cells.map((cell) => {
                   const { key, ...restProps } = cell.getCellProps();
                   return (
@@ -92,7 +104,7 @@ const TableComponent = ({ data, columns, onDataChange }) => {
                     >
                       {cell.column.editable ? (
                         <input
-                          type='text'
+                          type={cell.column.type}
                           value={cell.value || ''}
                           onChange={(e) =>
                             handleEdit(
