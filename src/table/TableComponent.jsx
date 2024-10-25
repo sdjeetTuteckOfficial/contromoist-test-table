@@ -2,17 +2,11 @@ import React, { useState } from 'react';
 import { useTable, usePagination } from 'react-table';
 import PropTypes from 'prop-types';
 
-const TableComponent = ({ data, columns, onDataChange }) => {
-  const [tableData, setTableData] = useState(data);
-
-  const handleEdit = (rowIndex, columnId, value) => {
-    const updatedData = [...tableData];
-    updatedData[rowIndex][columnId] = value; // Update the specific column value
-    setTableData(updatedData);
-
-    // Send updated data back to the parent
-    if (onDataChange) {
-      onDataChange(updatedData); // Pass the updated data to the parent
+const TableComponent = ({ tableData, columns, onEdit }) => {
+  //   const [tableData, setTableData] = useState(data);
+  const handleEdit = (rowIndex, columnId, value, id) => {
+    if (onEdit) {
+      onEdit(rowIndex, columnId, value, id); // Call the parent's edit handler
     }
   };
 
@@ -75,44 +69,145 @@ const TableComponent = ({ data, columns, onDataChange }) => {
           {page.map((row) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  const { key, ...restProps } = cell.getCellProps();
-                  return (
-                    <td
-                      key={key} // Set the key directly here
-                      {...restProps}
-                      style={{
-                        padding: '4px', // Reduced padding for smaller rows
-                        border: 'solid 1px gray',
-                        background: 'papayawhip',
-                        fontSize: '12px', // Smaller font size for table rows
-                      }}
-                      align='center'
-                    >
-                      {cell.column.editable ? (
-                        <input
-                          type='text'
-                          value={cell.value || ''}
-                          onChange={(e) =>
-                            handleEdit(
-                              row.index,
-                              cell.column.id,
-                              e.target.value
-                            )
-                          }
-                          style={{ width: '80%' }}
-                        />
-                      ) : (
-                        cell.render('Cell')
-                      )}
+              <React.Fragment key={row.id}>
+                <tr
+                  {...row.getRowProps()}
+                  style={{
+                    backgroundColor: row.original.hasError ? 'red' : 'white',
+                    color: row.original.hasError ? 'red' : 'black',
+                  }}
+                >
+                  {row.cells.map((cell) => {
+                    const { key, ...restProps } = cell.getCellProps();
+                    return (
+                      <td
+                        key={key}
+                        {...restProps}
+                        style={{
+                          padding: '4px',
+                          border: 'solid 1px gray',
+                          background: 'papayawhip',
+                          fontSize: '12px',
+                        }}
+                        align='center'
+                      >
+                        {cell.column.editable ? (
+                          <input
+                            type={cell.column.type}
+                            value={cell.value}
+                            onChange={(e) =>
+                              handleEdit(
+                                row.index,
+                                cell.column.id,
+                                e.target.value,
+                                row.original.id
+                              )
+                            }
+                            style={{ width: '80%' }}
+                          />
+                        ) : (
+                          cell.render('Cell')
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+                {/* Render error messages in a new row */}
+                {row.original.errorMessages?.length > 0 && (
+                  <tr>
+                    <td colSpan={columns.length} style={{ padding: '0' }}>
+                      {row.original.errorMessages.map((item, i) => (
+                        <p
+                          key={i}
+                          style={{
+                            backgroundColor: '#f8d7da',
+                            color: '#721c24',
+                            border: '1px solid #f5c6cb',
+                            borderRadius: '4px',
+                            padding: '5px',
+                            margin: '5px 0',
+                            fontSize: '9px',
+                          }}
+                        >
+                          {item}
+                        </p>
+                      ))}
                     </td>
-                  );
-                })}
-              </tr>
+                  </tr>
+                )}
+              </React.Fragment>
             );
           })}
         </tbody>
+        {/* <tbody {...getTableBodyProps()}>
+          {page.map((row) => {
+            prepareRow(row);
+            return (
+              <>
+                <tr
+                  {...row.getRowProps()}
+                  style={{
+                    backgroundColor: row.original.hasError ? 'red' : 'white',
+                    color: row.original.hasError ? 'red' : 'black',
+                  }}
+                >
+                  {row.cells.map((cell) => {
+                    const { key, ...restProps } = cell.getCellProps();
+                    return (
+                      <td
+                        key={key} // Set the key directly here
+                        {...restProps}
+                        style={{
+                          padding: '4px', // Reduced padding for smaller rows
+                          border: 'solid 1px gray',
+                          background: 'papayawhip',
+                          fontSize: '12px', // Smaller font size for table rows
+                        }}
+                        align='center'
+                      >
+                        {console.log('hiii', cell.row.original.errorMessages)}
+                        {cell.column.editable ? (
+                          <input
+                            type={cell.column.type}
+                            value={cell?.value}
+                            onChange={(e) =>
+                              handleEdit(
+                                row.index,
+                                cell.column.id,
+                                e.target.value,
+                                row.id
+                              )
+                            }
+                            style={{ width: '80%' }}
+                          />
+                        ) : (
+                          cell.render('Cell')
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+                {row.original.errorMessages?.length > 0
+                  ? row.original.errorMessages.map((item, i) => (
+                      <p
+                        key={i}
+                        style={{
+                          backgroundColor: '#f8d7da',
+                          color: '#721c24',
+                          border: '1px solid #f5c6cb',
+                          borderRadius: '4px',
+                          padding: '10px',
+                          margin: '5px 0',
+                        }}
+                      >
+                        {item}
+                      </p>
+                    ))
+                  : ''}
+              </>
+            );
+          })}
+        </tbody> */}
       </table>
 
       {/* Pagination */}
