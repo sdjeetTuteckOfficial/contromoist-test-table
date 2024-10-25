@@ -295,17 +295,29 @@ const ParentComponent = () => {
 
   const [tableData, setTableData] = useState(initialData);
 
-  const validateData = (data) => {
+  const validateData = (data, id) => {
     return data.map((item) => {
+      console.log('id', id, item.id);
       const errors = [];
       const receivedQuantity = parseFloat(item.received_quantity) || 0;
       const rejectedQuantity = parseFloat(item.rejected_quantity) || 0;
 
+      if (receivedQuantity < 0) {
+        errors.push('Received quantity cannot be negative.');
+      }
+      if (rejectedQuantity < 0) {
+        errors.push('Rejected quantity cannot be negative.');
+      }
+
       if (receivedQuantity > item.qty) {
         errors.push('Received quantity cannot exceed total quantity.');
       }
+
       if (rejectedQuantity > item.qty) {
         errors.push('Rejected quantity cannot exceed total quantity.');
+      }
+      if (id === item.id && receivedQuantity + rejectedQuantity !== item.qty) {
+        errors.push('JAY SHREE RAM!');
       }
       if (rejectedQuantity > 0 && (!item.notes || item.notes.trim() === '')) {
         errors.push('Comment is mandatory if rejected quantity is entered.');
@@ -315,11 +327,11 @@ const ParentComponent = () => {
     });
   };
 
-  const handleDataChange = (rowIndex, columnId, value) => {
+  const handleDataChange = (rowIndex, columnId, value, id) => {
     // Validate the updated data
     const updatedData = [...tableData];
     updatedData[rowIndex][columnId] = value; // Update the specific column value
-    const validatedData = validateData(updatedData);
+    const validatedData = validateData(updatedData, id);
     // Set the validated data in state
     setTableData(validatedData);
     console.log('Updated Data:', validatedData); // Log the updated data or process it further

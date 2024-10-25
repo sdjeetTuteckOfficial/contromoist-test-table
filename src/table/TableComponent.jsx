@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 
 const TableComponent = ({ tableData, columns, onEdit }) => {
   //   const [tableData, setTableData] = useState(data);
-  const handleEdit = (rowIndex, columnId, value) => {
+  const handleEdit = (rowIndex, columnId, value, id) => {
     if (onEdit) {
-      onEdit(rowIndex, columnId, value); // Call the parent's edit handler
+      onEdit(rowIndex, columnId, value, id); // Call the parent's edit handler
     }
   };
 
@@ -105,12 +105,13 @@ const TableComponent = ({ tableData, columns, onEdit }) => {
                       {cell.column.editable ? (
                         <input
                           type={cell.column.type}
-                          value={cell.value || ''}
+                          value={cell?.value}
                           onChange={(e) =>
                             handleEdit(
                               row.index,
                               cell.column.id,
-                              e.target.value
+                              e.target.value,
+                              row.id
                             )
                           }
                           style={{ width: '80%' }}
