@@ -249,14 +249,14 @@ const ParentComponent = () => {
       Header: 'Item Code',
       accessor: 'code',
     },
-    {
-      Header: 'Parent Item',
-      accessor: 'parent_name',
-    },
-    {
-      Header: 'Parent Code',
-      accessor: 'parent_code',
-    },
+    // {
+    //   Header: 'Parent Item',
+    //   accessor: 'parent_name',
+    // },
+    // {
+    //   Header: 'Parent Code',
+    //   accessor: 'parent_code',
+    // },
     {
       Header: 'Category',
       accessor: 'category_name',
@@ -300,30 +300,18 @@ const ParentComponent = () => {
       const errors = [];
       const receivedQuantity = parseFloat(item.received_quantity) || 0;
       const rejectedQuantity = parseFloat(item.rejected_quantity) || 0;
-      const qty = parseFloat(item.qty) || 0;
-      console.log('huihui', receivedQuantity, rejectedQuantity);
 
-      // Check if received and rejected quantities are greater than the quantity
-      if (receivedQuantity > qty) {
-        errors.push('Received Quantity cannot be greater than Quantity.');
+      if (receivedQuantity > item.qty) {
+        errors.push('Received quantity cannot exceed total quantity.');
       }
-      if (rejectedQuantity > qty) {
-        errors.push('Rejected Quantity cannot be greater than Quantity.');
+      if (rejectedQuantity > item.qty) {
+        errors.push('Rejected quantity cannot exceed total quantity.');
       }
-
-      // Check if comment is mandatory when rejected quantity is greater than zero
       if (rejectedQuantity > 0 && (!item.notes || item.notes.trim() === '')) {
-        errors.push('Comment is mandatory when rejecting items.');
+        errors.push('Comment is mandatory if rejected quantity is entered.');
       }
 
-      // Return the item with error status
-      return {
-        ...item,
-        received_quantity: receivedQuantity,
-        rejected_quantity: rejectedQuantity,
-        hasError: errors.length > 0,
-        errorMessages: errors.length > 0 ? errors : [], // Clear error messages if no errors
-      };
+      return { ...item, hasError: errors.length > 0, errorMessages: errors };
     });
   };
 
