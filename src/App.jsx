@@ -317,7 +317,7 @@ const ParentComponent = () => {
         errors.push('Rejected quantity cannot exceed total quantity.');
       }
       if (id === item.id && receivedQuantity + rejectedQuantity !== item.qty) {
-        errors.push('JAY SHREE RAM!');
+        errors.push('Rejected and received quantity mismatch with quantity');
       }
       if (rejectedQuantity > 0 && (!item.notes || item.notes.trim() === '')) {
         errors.push('Comment is mandatory if rejected quantity is entered.');

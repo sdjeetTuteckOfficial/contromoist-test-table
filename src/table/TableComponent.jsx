@@ -100,7 +100,7 @@ const TableComponent = ({ tableData, columns, onEdit }) => {
                                 row.index,
                                 cell.column.id,
                                 e.target.value,
-                                row.id
+                                row.original.id
                               )
                             }
                             style={{ width: '80%' }}
