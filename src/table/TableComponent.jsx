@@ -124,7 +124,7 @@ const TableComponent = ({ tableData, columns, onEdit }) => {
                     );
                   })}
                 </tr>
-                {row.original.errorMessages.length > 0
+                {row.original.errorMessages?.length > 0
                   ? row.original.errorMessages.map((item, i) => (
                       <p key={i}>{item}</p>
                     ))
