@@ -80,49 +80,56 @@ const TableComponent = ({ tableData, columns, onEdit }) => {
           {page.map((row) => {
             prepareRow(row);
             return (
-              <tr
-                {...row.getRowProps()}
-                style={{
-                  backgroundColor: row.original.hasError ? 'red' : 'white',
-                  color: row.original.hasError ? 'red' : 'black',
-                }}
-              >
-                {console.log('this is itt', row.original.hasError)}
-                {row.cells.map((cell) => {
-                  const { key, ...restProps } = cell.getCellProps();
-                  return (
-                    <td
-                      key={key} // Set the key directly here
-                      {...restProps}
-                      style={{
-                        padding: '4px', // Reduced padding for smaller rows
-                        border: 'solid 1px gray',
-                        background: 'papayawhip',
-                        fontSize: '12px', // Smaller font size for table rows
-                      }}
-                      align='center'
-                    >
-                      {cell.column.editable ? (
-                        <input
-                          type={cell.column.type}
-                          value={cell?.value}
-                          onChange={(e) =>
-                            handleEdit(
-                              row.index,
-                              cell.column.id,
-                              e.target.value,
-                              row.id
-                            )
-                          }
-                          style={{ width: '80%' }}
-                        />
-                      ) : (
-                        cell.render('Cell')
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+              <>
+                <tr
+                  {...row.getRowProps()}
+                  style={{
+                    backgroundColor: row.original.hasError ? 'red' : 'white',
+                    color: row.original.hasError ? 'red' : 'black',
+                  }}
+                >
+                  {row.cells.map((cell) => {
+                    const { key, ...restProps } = cell.getCellProps();
+                    return (
+                      <td
+                        key={key} // Set the key directly here
+                        {...restProps}
+                        style={{
+                          padding: '4px', // Reduced padding for smaller rows
+                          border: 'solid 1px gray',
+                          background: 'papayawhip',
+                          fontSize: '12px', // Smaller font size for table rows
+                        }}
+                        align='center'
+                      >
+                        {console.log('hiii', cell.row.original.errorMessages)}
+                        {cell.column.editable ? (
+                          <input
+                            type={cell.column.type}
+                            value={cell?.value}
+                            onChange={(e) =>
+                              handleEdit(
+                                row.index,
+                                cell.column.id,
+                                e.target.value,
+                                row.id
+                              )
+                            }
+                            style={{ width: '80%' }}
+                          />
+                        ) : (
+                          cell.render('Cell')
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+                {row.original.errorMessages.length > 0
+                  ? row.original.errorMessages.map((item, i) => (
+                      <p key={i}>{item}</p>
+                    ))
+                  : ''}
+              </>
             );
           })}
         </tbody>
