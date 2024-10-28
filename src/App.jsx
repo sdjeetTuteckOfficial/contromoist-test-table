@@ -319,7 +319,7 @@ const ParentComponent = () => {
       if (
         // id === item.id &&
         receivedQuantity !== 0 &&
-        receivedQuantity !== 0 &&
+        rejectedQuantity !== 0 &&
         receivedQuantity + rejectedQuantity !== item.qty
       ) {
         errors.push('Rejected and received quantity mismatch with quantity');
@@ -364,11 +364,12 @@ const ParentComponent = () => {
 
   return (
     <div>
-      <h2>Editable Table</h2>
+      <h2>Editable AI Table 🤖</h2>
       <TableComponent
         tableData={tableData}
         columns={columns}
         onEdit={handleDataChange1}
+        searchColumns={['item_name', 'brand_name']}
       />
       <button onClick={() => console.log('Final Data: ', tableData)}>
         Log Final Data
