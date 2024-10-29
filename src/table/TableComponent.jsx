@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useTable, usePagination } from 'react-table';
 import PropTypes from 'prop-types';
-
-const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
+ 
+const TableComponent = ({ tableData, columns, onEdit, searchColumns, onSelectRow }) => {
   const [searchInput, setSearchInput] = useState('');
-
+  const [checkedRows, setCheckedRows] = useState(new Set());
+ 
   // Filter data based on search input
   const filteredData = useMemo(() => {
     if (!searchInput) return tableData;
@@ -14,13 +15,36 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
       )
     );
   }, [tableData, searchInput, searchColumns]);
-
+ 
   const handleEdit = (rowIndex, columnId, value, id) => {
     if (onEdit) {
       onEdit(rowIndex, columnId, value, id); // Call the parent's edit handler
     }
   };
-
+ 
+  // Handle individual checkbox change
+  const handleCheckboxChange = (id) => {
+    const newCheckedRows = new Set(checkedRows);
+    if (newCheckedRows.has(id)) {
+      newCheckedRows.delete(id); // Uncheck
+    } else {
+      newCheckedRows.add(id); // Check
+    }
+    setCheckedRows(newCheckedRows);
+    onSelectRow(Array.from(newCheckedRows)); // Call the parent's select handler
+  };
+ 
+  // Handle "Select All" checkbox change
+  const handleSelectAll = (e) => {
+    const isChecked = e.target.checked;
+    const newCheckedRows = new Set();
+    if (isChecked) {
+      filteredData.forEach((row) => newCheckedRows.add(row.id));
+    }
+    setCheckedRows(newCheckedRows);
+    onSelectRow(Array.from(newCheckedRows));
+  };
+ 
   const {
     getTableProps,
     getTableBodyProps,
@@ -44,25 +68,33 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
     },
     usePagination
   );
-
+ 
   return (
-    <>
+    <> 
+    <div>
+
+
       {/* Global Search Input */}
       <input
         type='text'
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         placeholder='Search...'
-        style={{ margin: '10px', padding: '5px', width: '200px' }}
+        style={{ margin: '10px', padding: '5px', width: '200px' ,}}
       />
-
-      <table
-        {...getTableProps()}
-        style={{ border: 'solid 1px black', width: '100%' }}
-      >
+ 
+      <table {...getTableProps()} style={{  width: '100%' }}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
+              <th style={{ width: '50px', borderBottom: 'solid 2px red', }}>
+                {/* "Select All" Checkbox */}
+                <input
+                  type='checkbox'
+                  onChange={handleSelectAll}
+                  checked={checkedRows.size === filteredData.length && filteredData.length > 0}
+                />
+              </th>
               {headerGroup.headers.map((column) => {
                 const { key, ...restProps } = column.getHeaderProps();
                 return (
@@ -70,12 +102,12 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
                     key={key}
                     {...restProps}
                     style={{
-                      borderBottom: 'solid 2px red',
                       background: 'aliceblue',
                       color: 'black',
                       fontWeight: 'bold',
                       fontSize: '12px',
                       padding: '4px',
+                      borderBottom: 'solid 2px red',
                     }}
                   >
                     {column.render('Header')}
@@ -90,13 +122,14 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
             prepareRow(row);
             return (
               <React.Fragment key={row.id}>
-                <tr
-                  {...row.getRowProps()}
-                  style={{
-                    backgroundColor: row.original.hasError ? 'red' : 'white',
-                    color: row.original.hasError ? 'red' : 'black',
-                  }}
-                >
+                <tr {...row.getRowProps()}>
+                  <td align='center'>
+                    <input
+                      type='checkbox'
+                      checked={checkedRows.has(row.original.id)}
+                      onChange={() => handleCheckboxChange(row.original.id)}
+                    />
+                  </td>
                   {row.cells.map((cell) => {
                     const { key, ...restProps } = cell.getCellProps();
                     return (
@@ -116,12 +149,7 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
                             type={cell.column.type}
                             value={cell.value}
                             onChange={(e) =>
-                              handleEdit(
-                                row.index,
-                                cell.column.id,
-                                e.target.value,
-                                row.original.id
-                              )
+                              handleEdit(row.index, cell.column.id, e.target.value, row.original.id)
                             }
                             style={{ width: '80%' }}
                           />
@@ -134,7 +162,7 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
                 </tr>
                 {row.original.errorMessages?.length > 0 && (
                   <tr>
-                    <td colSpan={columns.length} style={{ padding: '0' }}>
+                    <td colSpan={columns.length + 1} style={{ padding: '0' }}>
                       {row.original.errorMessages.map((item, i) => (
                         <p
                           key={i}
@@ -159,7 +187,7 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
           })}
         </tbody>
       </table>
-
+ 
       {/* Pagination */}
       <div className='pagination'>
         <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
@@ -206,15 +234,19 @@ const TableComponent = ({ tableData, columns, onEdit, searchColumns }) => {
           ))}
         </select>
       </div>
+      </div>
     </>
   );
 };
-
+ 
 TableComponent.propTypes = {
   tableData: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   onEdit: PropTypes.func,
   searchColumns: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onSelectRow: PropTypes.func.isRequired,
 };
-
+ 
 export default TableComponent;
+ 
+ 
